@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Record</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Include SheetJS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #0078D7;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #0178D7;
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 100px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #009bb5;
+        }
+        .output {
+            margin-top: 2rem;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 9px;
+        }
+        .attendance-form {
+            display: none;
+        }
+        .house-details {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Master on Duty (M.O.D) Attendance Record</h1>
+    </header>
+    <main>
+        <!-- Dropdown for Attendance Time -->
+        <form id="attendanceTimeForm">
+            <div class="form-group">
+                <label for="attendanceTime">Attendance timing:</label>
+                <select id="attendanceTime" name="attendanceTime" required>
+                    <option value="">Select Time</option>
+                    <option value="Morning PT">Morning P.T</option>
+                    <option value="Assembly">Assembly</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Remedial">Remedial</option>
+                    <option value="Sports Time">Sports Time</option>
+                    <option value="Supervise">Supervise</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Late Night House">Late Night House</option>
+                </select>
+            </div>
+        </form>
+
+        <!-- Dropdown for Attendance Type -->
+        <form id="attendanceTypeForm">
+            <div class="form-group">
+                <label for="attendanceType">Select Attendance Type:</label>
+                <select id="attendanceType" name="attendanceType" required>
+                    <option value="">Select Attendance Type</option>
+                    <option value="class">Class Attendance</option>
+                    <option value="house">House Attendance</option>
+                </select>
+            </div>
+        </form>
+
+        <!-- Class Attendance Form -->
+        <form id="classAttendanceForm" class="attendance-form">
+            <div class="form-group">
+                <label for="modClass">Master On Duty (M.O.D):</label>
+                <input type="text" id="modClass" name="modClass" placeholder="Enter M.O.D Name" required>
+            </div>
+            <div class="form-group">
+                <label for="class">Class:</label>
+                <select id="class" name="class" required>
+                    <option value="">Select Class</option>
+                    <option value="6A">6A</option>
+                    <option value="6B">6B</option>
+                    <option value="7A">7A</option>
+                    <option value="7B">7B</option>
+                    <option value="8A">8A</option>
+                    <option value="8B">8B</option>
+                    <option value="9A">9A</option>
+                    <option value="9B">9B</option>
+                    <option value="10A">10A</option>
+                    <option value="10B">10B</option>
+                    <option value="11A">11A</option>
+                    <option value="11B">11B</option>
+                    <option value="12A">12A</option>
+                    <option value="12B">12B</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="totalClass">Total Strength:</label>
+                <input type="number" id="totalClass" name="totalClass" placeholder="Enter total strength" required>
+            </div>
+            <div class="form-group">
+                <label for="sickClass">Sick:</label>
+                <input type="number" id="sickClass" name="sickClass" placeholder="Enter number of sick students" required>
+            </div>
+            <div class="form-group">
+                <label for="absentClass">Absent:</label>
+                <input type="number" id="absentClass" name="absentClass" placeholder="Enter number of absent students" required>
+            </div>
+            <div class="form-group">
+                <label for="notReportedClass">Not Reported:</label>
+                <input type="number" id="notReportedClass" name="notReportedClass" placeholder="Enter number of not reported students" required>
+            </div>
+            <div class="form-group">
+                <label for="leaveClass">Leave:</label>
+                <input type="number" id="leaveClass" name="leaveClass" placeholder="Enter number of students on leave" required>
+            </div>
+            <div class="form-group">
+                <label for="presentClass">Present:</label>
+                <input type="number" id="presentClass" name="presentClass" placeholder="Enter number of present students" readonly>
+            </div>
+            <button type="button" onclick="saveClassAttendance()">Save Class Attendance</button>
+        </form>
+
+        <!-- House Attendance Form -->
+        <form id="houseAttendanceForm" class="attendance-form">
+            <div class="form-group">
+                <label for="modHouse">Master On Duty (M.O.D):</label>
+                <input type="text" id="modHouse" name="modHouse" placeholder="Enter M.O.D Name" required>
+            </div>
+            <div class="form-group">
+                <label for="house">House:</label>
+                <select id="house" name="house" required>
+                    <option value="">Select House</option>
+                    <option value="Arawali">Arawali</option>
+                    <option value="Nilgiri">Nilgiri</option>
+                    <option value="Shivalik">Shivalik</option>
+                    <option value="Udyagiri">Udyagiri</option>
+                </select>
+            </div>
+             <!-- Senior/Junior, Girls/Boys fields (Visible only for House Attendance) -->
+             <div class="house-details">
+                <div class="form-group">
+                    <label for="seniorJunior">Senior/Junior:</label>
+                    <select id="seniorJunior" name="seniorJunior" required>
+                        <option value="">Select Senior/Junior</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Junior">Junior</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="girlsBoys">Girls/Boys:</label>
+                    <select id="girlsBoys" name="girlsBoys" required>
+                        <option value="">Select Girls/Boys</option>
+                        <option value="Girls">Girls</option>
+                        <option value="Boys">Boys</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="totalHouse">Total Strength:</label>
+                <input type="number" id="totalHouse" name="totalHouse" placeholder="Enter total strength" required>
+            </div>
+            <div class="form-group">
+                <label for="sickHouse">Sick:</label>
+                <input type="number" id="sickHouse" name="sickHouse" placeholder="Enter number of sick students" required>
+            </div>
+            <div class="form-group">
+                <label for="absentHouse">Absent:</label>
+                <input type="number" id="absentHouse" name="absentHouse" placeholder="Enter number of absent students" required>
+            </div>
+            <div class="form-group">
+                <label for="notReportedHouse">Not Reported:</label>
+                <input type="number" id="notReportedHouse" name="notReportedHouse" placeholder="Enter number of not reported students" required>
+            </div>
+            <div class="form-group">
+                <label for="leaveHouse">Leave:</label>
+                <input type="number" id="leaveHouse" name="leaveHouse" placeholder="Enter number of students on leave" required>
+            </div>
+            <div class="form-group">
+                <label for="presentHouse">Present:</label>
+                <input type="number" id="presentHouse" name="presentHouse" placeholder="Enter number of present students" readonly>
+            </div>
+
+            
+            <button type="button" onclick="saveHouseAttendance()">Save House Attendance</button>
+        </form>
+
+        <button type="button" onclick="exportToExcel()">Export to Excel</button>
+        <button onclick="clearLocalStorage()">Clear All Attendance Records</button>
+
+
+        <div class="output" id="output"></div>
+    </main>
+
+    <script>
+        function clearLocalStorage() {
+    if (confirm('Are you sure you want to delete all attendance records? This action cannot be undone.')) {
+        localStorage.clear();
+        alert('All attendance records have been deleted!');
+        location.reload(); // Optional: Reload the page to reflect the changes.
+    }
+}
+
+        let classAttendanceRecords = []; // Array to store class attendance entries
+        let houseAttendanceRecords = []; // Array to store house attendance entries
+
+        // Show/hide forms based on selected attendance type
+        document.getElementById('attendanceType').addEventListener('change', function() {
+            const type = this.value;
+            if (type === 'class') {
+                document.getElementById('classAttendanceForm').style.display = 'block';
+                document.getElementById('houseAttendanceForm').style.display = 'none';
+            } else if (type === 'house') {
+                document.getElementById('houseAttendanceForm').style.display = 'block';
+                document.getElementById('classAttendanceForm').style.display = 'none';
+                document.querySelector('.house-details').style.display = 'block'; // Show Senior/Junior, Girls/Boys fields
+            } else {
+                document.getElementById('classAttendanceForm').style.display = 'none';
+                document.getElementById('houseAttendanceForm').style.display = 'none';
+                document.querySelector('.house-details').style.display = 'none'; // Hide Senior/Junior, Girls/Boys fields
+            }
+        });
+
+        // Calculate and display present students for class and house
+        document.querySelectorAll('#totalClass, #sickClass, #absentClass, #notReportedClass, #leaveClass').forEach(input => {
+            input.addEventListener('input', () => {
+                const total = parseInt(document.getElementById('totalClass').value) || 0;
+                const sick = parseInt(document.getElementById('sickClass').value) || 0;
+                const absent = parseInt(document.getElementById('absentClass').value) || 0;
+                const notReported = parseInt(document.getElementById('notReportedClass').value) || 0;
+                const leave = parseInt(document.getElementById('leaveClass').value) || 0;
+                const present = total - (sick + absent + notReported + leave);
+                document.getElementById('presentClass').value = present;
+            });
+        });
+
+        document.querySelectorAll('#totalHouse, #sickHouse, #absentHouse, #notReportedHouse, #leaveHouse').forEach(input => {
+            input.addEventListener('input', () => {
+                const total = parseInt(document.getElementById('totalHouse').value) || 0;
+                const sick = parseInt(document.getElementById('sickHouse').value) || 0;
+                const absent = parseInt(document.getElementById('absentHouse').value) || 0;
+                const notReported = parseInt(document.getElementById('notReportedHouse').value) || 0;
+                const leave = parseInt(document.getElementById('leaveHouse').value) || 0;
+                const present = total - (sick + absent + notReported + leave);
+                document.getElementById('presentHouse').value = present;
+            });
+        });
+
+        function saveClassAttendance() {
+    const time = document.getElementById('attendanceTime').value;
+    const mod = document.getElementById('modClass').value;
+    const className = document.getElementById('class').value;
+    const total = document.getElementById('totalClass').value;
+    const sick = document.getElementById('sickClass').value;
+    const absent = document.getElementById('absentClass').value;
+    const notReported = document.getElementById('notReportedClass').value;
+    const leave = document.getElementById('leaveClass').value;
+    const present = document.getElementById('presentClass').value;
+    const timestamp = new Date().toLocaleString(); // Get the current date and time
+
+    if (!time || !mod || !className || !total || !sick || !absent || !notReported || !leave) {
+        alert('Please fill out all fields.');
+        return;
+    }
+
+    const classRecord = {
+        time,
+        mod,
+        className,
+        total,
+        sick,
+        absent,
+        notReported,
+        leave,
+        present,
+        timestamp
+    };
+
+    classAttendanceRecords.push(classRecord);
+    saveDataToLocalStorage();
+    alert('Class Attendance Saved!');
+    document.getElementById('classAttendanceForm').reset();
+}
+
+
+
+
+
+function saveHouseAttendance() {
+    const time = document.getElementById('attendanceTime').value;
+    const mod = document.getElementById('modHouse').value;
+    const house = document.getElementById('house').value;
+    const seniorJunior = document.getElementById('seniorJunior').value;
+    const girlsBoys = document.getElementById('girlsBoys').value;
+    const total = document.getElementById('totalHouse').value;
+    const sick = document.getElementById('sickHouse').value;
+    const absent = document.getElementById('absentHouse').value;
+    const notReported = document.getElementById('notReportedHouse').value;
+    const leave = document.getElementById('leaveHouse').value;
+    const present = document.getElementById('presentHouse').value;
+
+    // Validate fields
+    if (!time || !mod || !house || !seniorJunior || !girlsBoys || !total || !sick || !absent || !notReported || !leave) {
+        alert('Please fill out all fields.');
+        return;
+    }
+
+    // Create the house attendance record
+    const houseRecord = {
+        time,
+        mod,
+        house,
+        seniorJunior,
+        girlsBoys,
+        total, // Fixed typo from `Total` to `total`
+        sick,
+        absent,
+        notReported,
+        leave,
+        present,
+    };
+
+    // Save the record to the array
+    houseAttendanceRecords.push(houseRecord);
+
+    // Save to localStorage
+    saveDataToLocalStorage();
+
+    // Notify the user
+    alert('House Attendance Saved!');
+    document.getElementById('houseAttendanceForm').reset();
+}
+
+
+
+
+        // Save data to localStorage
+function saveDataToLocalStorage() {
+    localStorage.setItem("classAttendance", JSON.stringify(classAttendanceRecords));
+    localStorage.setItem("houseAttendance", JSON.stringify(houseAttendanceRecords));
+}
+
+// Load data from localStorage
+function loadDataFromLocalStorage() {
+    classAttendanceRecords = JSON.parse(localStorage.getItem("classAttendance")) || [];
+    houseAttendanceRecords = JSON.parse(localStorage.getItem("houseAttendance")) || [];
+}
+
+// Call this on page load to restore data
+loadDataFromLocalStorage();
+
+
+        function exportToExcel() {
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
+
+    // Export Class Attendance
+    if (classAttendanceRecords.length > 0) {
+        const classSheet = XLSX.utils.json_to_sheet(classAttendanceRecords);
+        XLSX.utils.book_append_sheet(wb, classSheet, `Class Attendance`);
+    }
+
+    // Export House Attendance
+    if (houseAttendanceRecords.length > 0) {
+        const houseSheet = XLSX.utils.json_to_sheet(houseAttendanceRecords);
+        XLSX.utils.book_append_sheet(wb, houseSheet, `House Attendance`);
+    }
+
+    // Write the workbook to a file
+    XLSX.writeFile(wb, 'AttendanceRecords.xlsx');
+}
+
+
+
+    </script>
+</body>
+</html>
